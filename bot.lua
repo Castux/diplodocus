@@ -86,8 +86,26 @@ function commands.startphase(message, payload)
 end
 
 function commands.stopphase(message, payload)
+
+	if not data.phase then
+		reply(message, "No current phase.")
+		return
+	end
+
+	local all = {}
+
+	for player, orders in pairs(data[data.phase]) do
+		table.insert(all, "=========")
+		table.insert(all, player)
+		table.insert(all, orders)
+	end
+
+	table.insert(all, "=========")
+
+	reply(message, "Stopped phase **%s**.", data.phase)
+	reply(message, table.concat(all, "\n"))
+
 	data.phase = nil
-	reply(message, "Stopped current phase")
 end
 
 --[[ Bot start ]]
