@@ -2,3 +2,5 @@ lit
 luvit
 luvi
 deps/
+gateway.json
+*.log

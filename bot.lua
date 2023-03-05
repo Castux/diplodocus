@@ -1,10 +1,7 @@
 local discordia = require('discordia')
 local json = require('json')
 
-local client = discordia.Client{
-	logFile = 'diplodocus.log',
-	logLevel = discordia.enums.logLevel.debug
-}
+local client = discordia.Client()
 
 client:on('ready', function()
 	-- client.user is the path for your bot
@@ -12,9 +9,6 @@ client:on('ready', function()
 end)
 
 client:on('messageCreate', function(message)
-	for k,v in pairs(message) do
-		print(k,v)
-	end
 	if message.content == '!ping' then
 		message.channel:send('Pong!')
 	end
