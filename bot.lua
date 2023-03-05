@@ -76,7 +76,7 @@ function commands.status(message)
 			plural
 		)
 	else
-		reply(message, "Not accepting orders at the moment")
+		reply(message, "Not accepting orders at the moment.")
 	end
 end
 
@@ -131,7 +131,6 @@ function commands.send(message, payload, user)
 	)
 end
 
-
 function commands.check(message, payload, user)
 
 	if not data.phase then
@@ -166,6 +165,14 @@ function commands.remove(message, payload, user)
 	end
 end
 
+local helpMessage = string.format([[
+Sorry, I didn't quite get that. Try these:
+**%ssend <orders>**: send your orders for the current phase. They can be on multiple lines. That will overwrite previously sent orders if any.
+**%scheck**: check what are your current orders for the phase.
+**%sremove**: delete your current orders.
+**%sstatus**: see what the current phase is and how many have submitted orders so far.
+]], config.prefix, config.prefix, config.prefix, config.prefix)
+
 --[[ Bot start ]]
 
 client:on('ready', function()
@@ -183,7 +190,15 @@ client:on('messageCreate', function(message)
 			client:info("Command received: %s, %s, %s", user, com, payload or "")
 			func(message, payload, user)
 			saveData()
+
+			return
 		end
+	end
+
+	-- No match
+
+	if isPrivate(message) and message.author ~= client.user then
+		reply(message, helpMessage)
 	end
 
 end)
