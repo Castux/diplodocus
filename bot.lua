@@ -58,8 +58,15 @@ function commands.status(message)
 			count = count + 1
 		end
 
-		reply(message, "Accepting orders for **" .. data.phase .. "**.")
+		local plural =
+			count == 0 and "No users" or
+			count == 1 and "One user" or
+			(count .. " users")
 
+		reply(message, "Accepting orders for **%s**. %s have submitted their orders.",
+			data.phase,
+			plural
+		)
 	else
 		reply(message, "Not accepting orders at the moment")
 	end
