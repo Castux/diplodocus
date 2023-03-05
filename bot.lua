@@ -37,7 +37,11 @@ local function isPrivate(message)
 	return message.channel.type == discordia.enums.channelType.private
 end
 
-local function reply(message, ...)
+local function reply(message, text)
+	message.channel:send(text)
+end
+
+local function replyf(message, ...)
 	message.channel:send(string.format(...))
 end
 
@@ -63,7 +67,7 @@ function commands.status(message)
 			count == 1 and "One user has" or
 			(count .. " users have")
 
-		reply(message, "Accepting orders for **%s**. %s submitted their orders.",
+		replyf(message, "Accepting orders for **%s**. %s submitted their orders.",
 			data.phase,
 			plural
 		)
@@ -102,7 +106,7 @@ function commands.stopphase(message, payload)
 
 	table.insert(all, "=========")
 
-	reply(message, "Stopped phase **%s**.", data.phase)
+	replyf(message, "Stopped phase **%s**.", data.phase)
 	reply(message, table.concat(all, "\n"))
 
 	data.phase = nil
@@ -117,11 +121,31 @@ function commands.send(message, payload, user)
 
 	data[data.phase][user] = payload
 
-	reply(message, "Got it! Orders for **%s** in **%s**:\n%s",
+	replyf(message, "Got it! Orders for **%s** in **%s**:\n%s",
 		user,
 		data.phase,
 		payload
 	)
+end
+
+
+function commands.check(message, payload, user)
+
+	if not data.phase then
+		reply(message, "Not currently accepting orders.")
+		return
+	end
+
+	local orders = data[data.phase][user]
+
+	if not orders then
+		replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
+	else
+		replyf(message, "Your orders for **%s**:\n%s",
+			data.phase,
+			orders
+		)
+	end
 end
 
 --[[ Bot start ]]
