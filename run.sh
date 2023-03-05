@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./luvit bot.lua
+./luvit bot.lua 2>crash.log
