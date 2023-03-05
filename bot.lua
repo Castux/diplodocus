@@ -4,27 +4,31 @@ local config = dofile('config.lua')
 
 --[[ Setup ]]
 
-local client = discordia.Client()
+local client = discordia.Client {
+	logFile = 'diplodocus.log'
+}
 
 local data = {}
 local function loadData()
 
-	print('Loading data...')
+	client:info('Loading data...')
 
 	local fp = io.open(config.data, "r")
 
-	if fp then 
+	if fp then
 		local txt = fp:read("a")
 		data = json.decode(txt)
 
 		if not data then
-			error("Invalid data.json")
+			client:error("Invalid data.json")
+			client:stop()
+			return
 		end
 	else
 		data = {}
 	end
 
-	print('Done.')
+	client:info('Done.')
 end
 
 local function saveData()
@@ -166,7 +170,7 @@ end
 
 client:on('ready', function()
 
-	print('Logged in as '.. client.user.username)
+	client:info('Logged in as '.. client.user.username)
 	loadData()
 end)
 
@@ -176,7 +180,7 @@ client:on('messageCreate', function(message)
 		local user = message.author.username
 		local trigger,payload = message.content:match("^(" .. config.prefix .. com .. ")%s*(.*)")
 		if trigger then
-			print(message.timestamp, user, com, payload)
+			client:info("Command received: %s, %s, %s", user, com, payload or "")
 			func(message, payload, user)
 			saveData()
 		end
