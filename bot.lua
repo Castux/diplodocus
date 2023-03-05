@@ -74,7 +74,6 @@ function commands.status(message)
 	else
 		reply(message, "Not accepting orders at the moment")
 	end
-	
 end
 
 function commands.startphase(message, payload)
@@ -145,6 +144,21 @@ function commands.check(message, payload, user)
 			data.phase,
 			orders
 		)
+	end
+end
+
+function commands.remove(message, payload, user)
+
+	if not data.phase then
+		reply(message, "Not currently accepting orders.")
+		return
+	end
+
+	if data[data.phase][user] then
+		data[data.phase][user] = nil
+		replyf(message, "Removed your orders for **%s**.", data.phase)
+	else
+		replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
 	end
 end
 
