@@ -4,3 +4,4 @@ luvi
 deps/
 gateway.json
 *.log
+data.json
