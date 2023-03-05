@@ -59,11 +59,11 @@ function commands.status(message)
 		end
 
 		local plural =
-			count == 0 and "No users" or
-			count == 1 and "One user" or
-			(count .. " users")
+			count == 0 and "No users have" or
+			count == 1 and "One user has" or
+			(count .. " users have")
 
-		reply(message, "Accepting orders for **%s**. %s have submitted their orders.",
+		reply(message, "Accepting orders for **%s**. %s submitted their orders.",
 			data.phase,
 			plural
 		)
@@ -108,6 +108,22 @@ function commands.stopphase(message, payload)
 	data.phase = nil
 end
 
+function commands.send(message, payload, user)
+
+	if not data.phase then
+		reply(message, "Not currently accepting orders.")
+		return
+	end
+
+	data[data.phase][user] = payload
+
+	reply(message, "Got it! Orders for **%s** in **%s**:\n%s",
+		user,
+		data.phase,
+		payload
+	)
+end
+
 --[[ Bot start ]]
 
 client:on('ready', function()
@@ -119,10 +135,11 @@ end)
 client:on('messageCreate', function(message)
 
 	for com, func in pairs(commands) do
+		local user = message.author.username
 		local trigger,payload = message.content:match("^(" .. config.prefix .. com .. ")%s*(.*)")
 		if trigger then
-			print(message.timestamp, message.author.username, com, payload)
-			func(message, payload)
+			print(message.timestamp, user, com, payload)
+			func(message, payload, user)
 			saveData()
 		end
 	end
