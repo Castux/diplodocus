@@ -1,5 +1,6 @@
 local discordia = require('discordia')
 local json = require('json')
+local config = dofile('config.lua')
 
 local client = discordia.Client()
 
@@ -14,4 +15,4 @@ client:on('messageCreate', function(message)
 	end
 end)
 
-client:run('Bot MjUxMzQwMjg5NDI2MzI1NTA0.G7h84S.26vA4eobx01JTBnUVHOA3LnXPVBah7UdofNTfg')
+client:run('Bot ' .. config.token)
