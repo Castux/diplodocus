@@ -41,10 +41,20 @@ client:on('ready', function()
 	loadData()
 end)
 
-client:on('messageCreate', function(message)
+local commands = {
 
-	if message.content == '!ping' then
-		message.channel:send('Pong!')
+	ping = function(message)
+		message.channel:send("Pong!")
+	end
+
+}
+
+client:on('messageCreate', function(message)
+	
+	for com, func in pairs(commands) do
+		if message.content:lower():match("^" .. config.prefix .. com) then
+			func(message)
+		end
 	end
 end)
 

@@ -1,4 +1,5 @@
 return {
     token = "?",
-    data = "data.json"
+    data = "data.json",
+    prefix = "!"
 }
