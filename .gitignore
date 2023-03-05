@@ -5,3 +5,4 @@ deps/
 gateway.json
 *.log
 data.json
+config.lua
