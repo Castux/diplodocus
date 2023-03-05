@@ -1,0 +1,14 @@
+[Unit]
+Description=Diplodocus Diplomacy Discord Bot
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=tenoch
+WorkingDirectory=/home/tenoch/dev/diplodocus
+ExecStart=/home/tenoch/dev/diplodocus/run.sh
+
+[Install]
+WantedBy=multi-user.target
