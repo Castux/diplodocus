@@ -67,9 +67,9 @@ function commands.status(message)
 		end
 
 		local plural =
-			count == 0 and "No users have" or
-			count == 1 and "One user has" or
-			(count .. " users have")
+			count == 0 and "No player has" or
+			count == 1 and "One player has" or
+			(count .. " players have")
 
 		replyf(message, "Accepting orders for **%s**. %s submitted their orders.",
 			data.phase,
