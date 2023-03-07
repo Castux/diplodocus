@@ -51,16 +51,49 @@ end
 
 --[[ Commands ]]
 
-local commands = {}
+local checks = {}
 
-function commands.ping(message, payload)
-	reply(message, "Pong! " .. payload)
+function checks.public(message)
+
+	if isPrivate(message) then
+		reply(message, "Action is only valid in public channels")
+		return false
+	end
+
+	return true
 end
 
-function commands.status(message)
+function checks.phase(message)
 
+	if not data.phase then
+		reply(message, "Not currently accepting orders.")
+		return false
+	end
+
+	return true
+end
+
+function checks.nophase(message)
 	if data.phase then
+		reply(message, "Already accepting orders.")
+		return false
+	end
 
+	return true
+end
+
+local commands = {}
+
+commands.ping = {
+	checks = {},
+	func = function(message, payload)
+		reply(message, "Pong! " .. payload)
+	end
+}
+
+commands.status = {
+	checks = {"phase"},
+	func = function(message)
 		local count = 0
 		for k,v in pairs(data[data.phase]) do
 			count = count + 1
@@ -75,112 +108,92 @@ function commands.status(message)
 			data.phase,
 			plural
 		)
-	else
-		reply(message, "Not accepting orders at the moment.")
 	end
-end
+}
 
-function commands.startphase(message, payload)
+commands.startphase = {
+	checks = {"public", "nophase"},
+	func = function(message, payload)
+		if not payload or #payload == 0 then
+			reply(message, "Invalid phase")
+			return
+		end
 
-	if isPrivate(message) then
-		reply(message, "GM actions only valid in public channels")
-		return
+		data.phase = payload
+		data[payload] = {}
+		reply(message, "Starting phase **" .. payload .. "**")
 	end
+}
 
-	if not payload or #payload == 0 then
-		reply(message, "Invalid phase")
-		return
-	end
+commands.stopphase = {
+	checks = {"public", "phase"},
+	func = function(message, payload)
+		local all = {}
 
-	data.phase = payload
-	data[payload] = {}
-	reply(message, "Starting phase **" .. payload .. "**")
-end
+		for player, orders in pairs(data[data.phase]) do
+			table.insert(all, "=========")
+			table.insert(all, player)
+			table.insert(all, orders)
+		end
 
-function commands.stopphase(message, payload)
-
-	if isPrivate(message) then
-		reply(message, "GM actions only valid in public channels")
-		return
-	end
-
-	if not data.phase then
-		reply(message, "No current phase.")
-		return
-	end
-
-	local all = {}
-
-	for player, orders in pairs(data[data.phase]) do
 		table.insert(all, "=========")
-		table.insert(all, player)
-		table.insert(all, orders)
+
+		replyf(message, "Stopped phase **%s**.", data.phase)
+		reply(message, table.concat(all, "\n"))
+
+		data.phase = nil
 	end
+}
 
-	table.insert(all, "=========")
+commands.send = {
+	checks = {"phase"},
+	func = function(message, payload, user)
+		data[data.phase][user] = payload
 
-	replyf(message, "Stopped phase **%s**.", data.phase)
-	reply(message, table.concat(all, "\n"))
-
-	data.phase = nil
-end
-
-function commands.send(message, payload, user)
-
-	if not data.phase then
-		reply(message, "Not currently accepting orders.")
-		return
-	end
-
-	data[data.phase][user] = payload
-
-	replyf(message, "Got it! Orders for **%s** in **%s**:\n%s",
-		user,
-		data.phase,
-		payload
-	)
-end
-
-function commands.check(message, payload, user)
-
-	if not data.phase then
-		reply(message, "Not currently accepting orders.")
-		return
-	end
-
-	local orders = data[data.phase][user]
-
-	if not orders then
-		replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
-	else
-		replyf(message, "Your orders for **%s**:\n%s",
+		replyf(message, "Got it! Orders for **%s** in **%s**:\n%s",
+			user,
 			data.phase,
-			orders
+			payload
 		)
 	end
-end
+}
 
-function commands.remove(message, payload, user)
+commands.check = {
+	checks = {"phase"},
+	func = function(message, payload, user)
 
-	if not data.phase then
-		reply(message, "Not currently accepting orders.")
-		return
+		local orders = data[data.phase][user]
+		if not orders then
+			replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
+		else
+			replyf(message, "Your orders for **%s**:\n%s",
+				data.phase,
+				orders
+			)
+		end
 	end
+}
 
-	if data[data.phase][user] then
-		data[data.phase][user] = nil
-		replyf(message, "Removed your orders for **%s**.", data.phase)
-	else
-		replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
+commands.remove = {
+	checks = {"phase"},
+	func = function(message, payload, user)
+		if data[data.phase][user] then
+			data[data.phase][user] = nil
+			replyf(message, "Removed your orders for **%s**.", data.phase)
+		else
+			replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
+		end
 	end
-end
+}
 
-function commands.kill(message)
-
-	reply(message, "Ok. Signing off.")
-	client:close()
-	os.exit()
-end
+commands.kill = {
+	checks = {},
+	func = function(message)
+		reply(message, "Ok. Signing off.")
+		client:stop()
+		os.exit()
+	end
+}
 
 local helpMessage = string.format([[
 Sorry, I didn't quite get that. Try these:
@@ -200,12 +213,22 @@ end)
 
 client:on('messageCreate', function(message)
 
-	for com, func in pairs(commands) do
+	for name, command in pairs(commands) do
+
 		local user = message.author.username
-		local trigger,payload = message.content:match("^(" .. config.prefix .. com .. ")%s*(.*)")
+		local trigger, payload = message.content:match("^(" .. config.prefix .. name .. ")%s*(.*)")
+
 		if trigger then
-			client:info("Command received: %s, %s, %s", user, com, payload or "")
-			func(message, payload, user)
+			client:info("Command received: %s, %s, %s", user, name, payload or "")
+
+			for _, check in ipairs(command.checks) do
+				local passed = checks[check](message, payload, user)
+				if not passed then
+					return
+				end
+			end
+
+			command.func(message, payload, user)
 			saveData()
 
 			return
