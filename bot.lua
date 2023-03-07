@@ -82,6 +82,11 @@ end
 
 function commands.startphase(message, payload)
 
+	if isPrivate(message) then
+		reply(message, "GM actions only valid in public channels")
+		return
+	end
+
 	if not payload or #payload == 0 then
 		reply(message, "Invalid phase")
 		return
@@ -93,6 +98,11 @@ function commands.startphase(message, payload)
 end
 
 function commands.stopphase(message, payload)
+
+	if isPrivate(message) then
+		reply(message, "GM actions only valid in public channels")
+		return
+	end
 
 	if not data.phase then
 		reply(message, "No current phase.")
@@ -163,6 +173,13 @@ function commands.remove(message, payload, user)
 	else
 		replyf(message, "You have not submitted orders yet for **%s**.", data.phase)
 	end
+end
+
+function commands.kill(message)
+	
+	reply("Ok. Signing off.")
+	client:close()
+	os.exit()
 end
 
 local helpMessage = string.format([[
