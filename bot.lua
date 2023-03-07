@@ -176,8 +176,8 @@ function commands.remove(message, payload, user)
 end
 
 function commands.kill(message)
-	
-	reply("Ok. Signing off.")
+
+	reply(message, "Ok. Signing off.")
 	client:close()
 	os.exit()
 end
