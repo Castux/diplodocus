@@ -6,9 +6,9 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=tenoch
-WorkingDirectory=/home/tenoch/dev/diplodocus
-ExecStart=/home/tenoch/dev/diplodocus/run.sh
+User=?????
+WorkingDirectory=?????
+ExecStart=?????
 
 [Install]
 WantedBy=multi-user.target
