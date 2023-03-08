@@ -1,5 +1,7 @@
 local discordia = require('discordia')
 local json = require('json')
+local b64  = require('base64')
+
 local config = dofile('config.lua')
 
 --[[ Setup ]]
@@ -17,7 +19,12 @@ local function loadData()
 
 	if fp then
 		local txt = fp:read("a")
-		data = json.decode(txt)
+
+		if txt:match("{") then
+			data = json.decode(txt)
+		else
+			data = json.decode(b64.decode(txt))
+		end
 
 		if not data then
 			client:error("Invalid data.json")
@@ -33,7 +40,7 @@ end
 
 local function saveData()
 	local fp = io.open(config.data, "w")
-	fp:write(json.encode(data))
+	fp:write(b64.encode(json.encode(data)))
 	fp:close()
 end
 
@@ -219,7 +226,7 @@ client:on('messageCreate', function(message)
 		local trigger, payload = message.content:match("^(" .. config.prefix .. name .. ")%s*(.*)")
 
 		if trigger then
-			client:info("Command received: %s, %s, %s", user, name, payload or "")
+			client:info("Command received: %s, %s", user, name)
 
 			for _, check in ipairs(command.checks) do
 				local passed = checks[check](message, payload, user)
