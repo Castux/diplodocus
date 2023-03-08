@@ -19,9 +19,11 @@ local function loadData()
 
 	if fp then
 		local txt = fp:read("a")
-		data = json.decode(b64.decode(txt))
+		local success, value = pcall(function() return json.decode(b64.decode(txt)) end)
 
-		if not data then
+		if success then
+			data = value
+		else
 			client:error("Invalid data.json")
 			client:stop()
 			return
