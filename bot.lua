@@ -19,12 +19,7 @@ local function loadData()
 
 	if fp then
 		local txt = fp:read("a")
-
-		if txt:match("{") then
-			data = json.decode(txt)
-		else
-			data = json.decode(b64.decode(txt))
-		end
+		data = json.decode(b64.decode(txt))
 
 		if not data then
 			client:error("Invalid data.json")
