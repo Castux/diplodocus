@@ -1,30 +1,30 @@
-local discordia = require('discordia')
-local json = require('json')
-local b64  = require('base64')
+local discordia = require "discordia"
+local json = require "json"
+local b64  = require "base64"
 
-local config = dofile('config.lua')
+local config = dofile "config.lua"
 
 --[[ Setup ]]
 
 local client = discordia.Client {
-	logFile = 'diplodocus.log'
+	logFile = "diplodocus.log"
 }
 
 local data = {}
 local function loadData()
 
-	client:info('Loading data...')
+	client:info "Loading data..."
 
 	local fp = io.open(config.data, "r")
 
 	if fp then
-		local txt = fp:read("a")
+		local txt = fp:read "a"
 		local success, value = pcall(function() return json.decode(b64.decode(txt)) end)
 
 		if success then
 			data = value
 		else
-			client:error("Invalid data.json")
+			client:error "Invalid data.json"
 			client:stop()
 			return
 		end
@@ -32,7 +32,7 @@ local function loadData()
 		data = {}
 	end
 
-	client:info('Done.')
+	client:info "Done."
 end
 
 local function saveData()
@@ -209,13 +209,13 @@ Sorry, I didn't quite get that. Try these:
 
 --[[ Bot start ]]
 
-client:on('ready', function()
+client:on("ready", function()
 
-	client:info('Logged in as '.. client.user.username)
+	client:info("Logged in as ".. client.user.username)
 	loadData()
 end)
 
-client:on('messageCreate', function(message)
+client:on("messageCreate", function(message)
 
 	for name, command in pairs(commands) do
 
@@ -247,4 +247,4 @@ client:on('messageCreate', function(message)
 
 end)
 
-client:run('Bot ' .. config.token)
+client:run("Bot " .. config.token)
