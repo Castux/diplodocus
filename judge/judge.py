@@ -11,6 +11,8 @@ sys.path.append('diplomacy')
 from diplomacy import Game
 from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 
+import utils
+
 # game = Game(map_name='chasers.map')
 # game.process()
 #
@@ -77,5 +79,10 @@ async def on_ready():
 @bot.command()
 async def ping(ctx, *, content):
 	await ctx.send("Pong! " + content or "")
+
+@bot.command()
+async def gamestate(ctx):
+	text = utils.gamestate_to_text(game)
+	await ctx.send(text)
 
 bot.run(config["token"])
