@@ -112,4 +112,16 @@ async def check(ctx):
 
 	await ctx.send(text)
 
+@bot.command()
+async def remove(ctx):
+	player = ctx.author.name
+	if not player in database["orders"]:
+		text = f"No orders sent for {player}"
+	else:
+		database["orders"].pop(player)
+		save_database()
+		text = f"Removed orders for {player}"
+
+	await ctx.send(text)
+
 bot.run(config["token"])
