@@ -5,6 +5,7 @@ import os
 import discord
 from datetime import datetime
 from discord.ext import commands
+import typing
 
 sys.path.append('diplomacy')
 
@@ -123,5 +124,9 @@ async def remove(ctx):
 		text = f"Removed orders for {player}"
 
 	await ctx.send(text)
+
+@bot.command()
+async def hint(ctx, prov: typing.Optional[str]):
+	await ctx.send(utils.get_hint_for_province(game, prov))
 
 bot.run(config["token"])

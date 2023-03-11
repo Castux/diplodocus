@@ -24,3 +24,20 @@ def save_orders(config, database, username, orders):
 		database["orders"] = {}
 
 	database["orders"][username] = orders
+
+def get_hint_for_province(game, prov):
+	hints = game.get_all_possible_orders()
+
+	if prov == None:
+		text = "Missing province name"
+	else:
+		prov = prov.upper()
+		if prov in hints:
+			if len(hints[prov]) > 0:
+				text = "\n".join(hints[prov])
+			else:
+				text = "No orders possible for " + prov
+		else:
+			text = "Unknown province: " + prov
+
+	return text
