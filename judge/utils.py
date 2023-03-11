@@ -5,8 +5,9 @@ def gamestate_to_text(game):
 	lines.append("**" + game.phase + "**\n")
 
 	for name, power in game.powers.items():
-		lines.append("__" + name + "__ (SCs: " + " ".join(power.centers) + ")" )
+		lines.append(name + " (SCs: " + " ".join(power.centers) + ")" )
 		lines.append("\n".join(power.units))
+		lines.append("")
 
 	return '\n'.join(lines)
 
@@ -28,14 +29,14 @@ def get_player_power(config, ctx):
 
 	return player, config["players"][player], None
 
-def check_orders(game, power, orders):
+def check_orders(database, power, orders):
+	game = from_saved_game_format(database["game"])
 	orders = orders.split('\n')
 
 	try:
 		game.set_orders(power, orders)
 		errors = game.error
 		valid_orders = game.get_orders(power)
-		game.clear_orders(power)
 		return valid_orders, errors
 	except:
 		return [], ["Error while reading orders"]
@@ -81,7 +82,7 @@ def simulate(database, orders):
 		if line in game.powers.keys():
 			power = line
 		elif power != None and line != "":
-		 game.set_orders(power, line)
+			game.set_orders(power, line)
 
 	if len(game.error) > 0:
 		return "\n".join(map(str, game.error))
@@ -92,5 +93,9 @@ def simulate(database, orders):
 		for o in porders:
 			lines.append("\t" + o)
 		lines.append("")
+
+	game.process()
+	statuses = game.get_order_status()
+	lines += ["\n", gamestate_to_text(game)]
 
 	return "\n".join(lines)

@@ -106,7 +106,7 @@ async def send(ctx, *, orders):
 		await ctx.send(err)
 		return
 
-	valid, errors = utils.check_orders(game, power, orders)
+	valid, errors = utils.check_orders(database, power, orders)
 
 	if len(errors) > 0:
 		text = "\n".join(map(str, errors))
