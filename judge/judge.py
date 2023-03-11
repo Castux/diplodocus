@@ -43,6 +43,9 @@ with open("config.json", "r") as f:
 with open(config["database"], "r") as f:
 	database = json.load(f)
 
+if not "orders" in database:
+	database["orders"] = {}
+
 def save_database():
 	old_name = config["database"]
 	new_name = config["database"] + "." + datetime.now().isoformat() + ".json"
@@ -57,6 +60,7 @@ if "game" in database:
 	game = from_saved_game_format(database["game"])
 else:
 	game = Game(map_name=config["variant"])
+
 
 def save_game():
 	database["game"] = to_saved_game_format(game)
@@ -83,6 +87,29 @@ async def ping(ctx, *, content):
 @bot.command()
 async def gamestate(ctx):
 	text = utils.gamestate_to_text(game)
+	await ctx.send(text)
+
+@bot.command()
+async def status(ctx):
+	text = f"Current phase is **{game.phase}**. {utils.get_ready_players_count(database)} sent their orders."
+	await ctx.send(text)
+
+@bot.command()
+async def send(ctx, *, content):
+	player =  ctx.author.name
+	utils.save_orders(config, database, player, content)
+	save_database()
+
+	await ctx.send(f"Saved orders for {player}:\n{content}")
+
+@bot.command()
+async def check(ctx):
+	player = ctx.author.name
+	if not player in database["orders"]:
+		text = f"No orders sent for {player}"
+	else:
+		text = f"Orders for {player}:\n{database['orders'][player]}"
+
 	await ctx.send(text)
 
 bot.run(config["token"])
