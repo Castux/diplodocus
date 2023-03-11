@@ -1,7 +1,9 @@
 import random
 import json
 import sys
+import os
 import discord
+from datetime import datetime
 from discord.ext import commands
 
 sys.path.append('diplomacy')
@@ -40,6 +42,10 @@ with open(config["database"], "r") as f:
 	database = json.load(f)
 
 def save_database():
+	old_name = config["database"]
+	new_name = config["database"] + "." + datetime.now().isoformat() + ".json"
+	os.rename(old_name, new_name)
+
 	with open(config["database"], "w") as f:
 		f.write(json.dumps(database))
 
