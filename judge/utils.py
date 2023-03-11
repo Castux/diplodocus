@@ -73,6 +73,15 @@ def get_hint_for_province(game, prov):
 
 	return text
 
+def order_to_unit(order):
+	return " ".join(order.split()[0:2])
+
+def sanitize_result(r):
+	r = str(r)
+	if r == "":
+		r = "OK"
+	return r
+
 def simulate(database, orders):
 
 	game = from_saved_game_format(database["game"])
@@ -87,15 +96,22 @@ def simulate(database, orders):
 	if len(game.error) > 0:
 		return "\n".join(map(str, game.error))
 
-	lines = []
-	for power, porders in game.get_orders().items():
-		lines.append(power)
-		for o in porders:
-			lines.append("\t" + o)
-		lines.append("")
 
 	game.process()
-	statuses = game.get_order_status()
-	lines += ["\n", gamestate_to_text(game)]
+	phase = game.get_phase_history()[-1]
+#
+	lines = ["**Orders**", ""]
+	for power, orders in phase.orders.items():
+		lines.append(power)
+		for order in orders:
+			results = phase.results[order_to_unit(order)]
+			results = map(str, results)
+			results = ", ".join(results)
+			if results != "":
+				results = " (" + results + ")"
+			lines.append("\t" + order + results)
+		lines.append("")
+
+	lines += [gamestate_to_text(game)]
 
 	return "\n".join(lines)
