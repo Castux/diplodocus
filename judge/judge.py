@@ -101,10 +101,9 @@ async def status(ctx):
 
 @bot.command()
 async def send(ctx, *, orders):
-	player = ctx.author.name
-	power = utils.get_player_power(config, player)
-	if power == None:
-		await ctx.send(f"Player {player}'s power missing from config")
+	player, power, err = utils.get_player_power(config, ctx)
+	if err:
+		await ctx.send(err)
 		return
 
 	valid, errors = utils.check_orders(game, power, orders)
@@ -120,10 +119,9 @@ async def send(ctx, *, orders):
 
 @bot.command()
 async def check(ctx):
-	player = ctx.author.name
-	power = utils.get_player_power(config, player)
-	if power == None:
-		await ctx.send(f"Player {player}'s power missing from config")
+	player, power, err = utils.get_player_power(config, ctx)
+	if err:
+		await ctx.send(err)
 		return
 
 	if not player in database["orders"]:

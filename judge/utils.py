@@ -19,11 +19,12 @@ def get_ready_players_count(database):
 	else:
 		return (count + " players have")
 
-def get_player_power(config, username):
-	if (not "players" in config) or (not username in config["players"]):
-		return None
+def get_player_power(config, ctx):
+	player = ctx.author.name
+	if (not "players" in config) or (not player in config["players"]):
+		return None, None, f"Player {player}'s power missing from config"
 
-	return config["players"][username]
+	return player, config["players"][player], None
 
 def check_orders(game, power, orders):
 	orders = orders.split('\n')
@@ -44,6 +45,7 @@ def save_orders(config, database, username, orders):
 	database["orders"][username] = orders
 
 def orders_to_text(player, power, database):
+
 	lines = ["Orders for " + player + ":"]
 	lines.append(power)
 	for o in database["orders"][player]:
