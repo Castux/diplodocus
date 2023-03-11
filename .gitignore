@@ -4,5 +4,6 @@ luvi
 deps/
 gateway.json
 *.log
-data.json
+data*.json
 config.lua
+config.json

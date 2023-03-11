@@ -1,5 +1,6 @@
 {
 	"token": "",
 	"database": "database.json",
-	"prefix": "!"
+	"prefix": "!",
+	"variant": ""
 }

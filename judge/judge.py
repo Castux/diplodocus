@@ -7,7 +7,7 @@ from discord.ext import commands
 sys.path.append('diplomacy')
 
 from diplomacy import Game
-from diplomacy.utils.export import to_saved_game_format
+from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 
 # game = Game(map_name='chasers.map')
 # game.process()
@@ -31,35 +31,45 @@ from diplomacy.utils.export import to_saved_game_format
 
 #to_saved_game_format(game, output_path='game.json')
 
-def load_config(path):
-    with open(path, "r") as f:
-        return json.load(f)
+################################################################################
 
-def start_bot(config):
+with open("config.json", "r") as f:
+	config = json.load(f)
 
-    intents = discord.Intents.default()
-    intents.message_content = True
+with open(config["database"], "r") as f:
+	database = json.load(f)
 
-    bot = commands.Bot(command_prefix=config["prefix"], intents=intents)
+def save_database():
+	with open(config["database"], "w") as f:
+		f.write(json.dumps(database))
 
-    @bot.event
-    async def on_ready():
-        print(f'Logged on as {bot.user}: {bot.user.id}!')
+################################################################################
 
-    @bot.command()
-    async def ping(ctx, content):
-        await ctx.send("Pong! " + content or "")
+if "game" in database:
+	game = from_saved_game_format(database["game"])
+else:
+	game = Game(map_name=config["variant"])
 
-    @bot.group()
-    async def cool(ctx):
-        """Says if a user is cool.
-        In reality this just checks if a subcommand is being invoked.
-        """
-        if ctx.invoked_subcommand is None:
-            await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
+def save_game():
+	database["game"] = to_saved_game_format(game)
 
-    bot.run(config["token"])
+################################################################################
 
+save_game()
+save_database()
 
-config = load_config("config.json")
-start_bot(config)
+################################################################################
+
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix=config["prefix"], intents=intents)
+
+@bot.event
+async def on_ready():
+	print(f"Connected as {bot.user}")
+
+@bot.command()
+async def ping(ctx, *, content):
+	await ctx.send("Pong! " + content or "")
+
+bot.run(config["token"])
