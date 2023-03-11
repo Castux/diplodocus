@@ -1,3 +1,5 @@
+from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
+
 def gamestate_to_text(game):
 	lines = []
 	lines.append("**" + game.phase + "**\n")
@@ -69,3 +71,26 @@ def get_hint_for_province(game, prov):
 			text = "Unknown province: " + prov
 
 	return text
+
+def simulate(database, orders):
+
+	game = from_saved_game_format(database["game"])
+	power = None
+
+	for line in orders.split("\n"):
+		if line in game.powers.keys():
+			power = line
+		elif power != None and line != "":
+		 game.set_orders(power, line)
+
+	if len(game.error) > 0:
+		return "\n".join(map(str, game.error))
+
+	lines = []
+	for power, porders in game.get_orders().items():
+		lines.append(power)
+		for o in porders:
+			lines.append("\t" + o)
+		lines.append("")
+
+	return "\n".join(lines)

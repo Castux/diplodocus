@@ -147,4 +147,9 @@ async def remove(ctx):
 async def hint(ctx, prov: typing.Optional[str]):
 	await ctx.send(utils.get_hint_for_province(game, prov))
 
+@bot.command()
+async def simulate(ctx, *, orders):
+	result = utils.simulate(database, orders)
+	await ctx.send(result)
+
 bot.run(config["token"])
