@@ -2,5 +2,6 @@
 	"token": "",
 	"database": "database.json",
 	"prefix": "!",
-	"variant": ""
+	"variant": "",
+	"players": {}
 }

@@ -19,11 +19,37 @@ def get_ready_players_count(database):
 	else:
 		return (count + " players have")
 
+def get_player_power(config, username):
+	if (not "players" in config) or (not username in config["players"]):
+		return None
+
+	return config["players"][username]
+
+def check_orders(game, power, orders):
+	orders = orders.split('\n')
+
+	try:
+		game.set_orders(power, orders)
+		errors = game.error
+		valid_orders = game.get_orders(power)
+		game.clear_orders(power)
+		return valid_orders, errors
+	except:
+		return [], ["Error while reading orders"]
+
 def save_orders(config, database, username, orders):
 	if not "orders" in database:
 		database["orders"] = {}
 
 	database["orders"][username] = orders
+
+def orders_to_text(player, power, database):
+	lines = ["Orders for " + player + ":"]
+	lines.append(power)
+	for o in database["orders"][player]:
+		lines.append("\t" + o)
+
+	return "\n".join(lines)
 
 def get_hint_for_province(game, prov):
 	hints = game.get_all_possible_orders()

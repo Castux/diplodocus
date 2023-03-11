@@ -62,6 +62,10 @@ if "game" in database:
 else:
 	game = Game(map_name=config["variant"])
 
+if len(game.error) > 0:
+	for err in game.error:
+		print(err)
+	sys.exit(1)
 
 def save_game():
 	database["game"] = to_saved_game_format(game)
@@ -96,20 +100,36 @@ async def status(ctx):
 	await ctx.send(text)
 
 @bot.command()
-async def send(ctx, *, content):
-	player =  ctx.author.name
-	utils.save_orders(config, database, player, content)
-	save_database()
+async def send(ctx, *, orders):
+	player = ctx.author.name
+	power = utils.get_player_power(config, player)
+	if power == None:
+		await ctx.send(f"Player {player}'s power missing from config")
+		return
 
-	await ctx.send(f"Saved orders for {player}:\n{content}")
+	valid, errors = utils.check_orders(game, power, orders)
+
+	if len(errors) > 0:
+		text = "\n".join(map(str, errors))
+	else:
+		utils.save_orders(config, database, player, valid)
+		save_database()
+		text = utils.orders_to_text(player, power, database)
+
+	await ctx.send(text)
 
 @bot.command()
 async def check(ctx):
 	player = ctx.author.name
+	power = utils.get_player_power(config, player)
+	if power == None:
+		await ctx.send(f"Player {player}'s power missing from config")
+		return
+
 	if not player in database["orders"]:
 		text = f"No orders sent for {player}"
 	else:
-		text = f"Orders for {player}:\n{database['orders'][player]}"
+		text = utils.orders_to_text(player, power, database)
 
 	await ctx.send(text)
 
