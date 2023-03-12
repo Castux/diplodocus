@@ -86,21 +86,54 @@ async def on_ready():
 	print(f"Connected as {bot.user}")
 
 @bot.command()
-async def ping(ctx, *, content):
+async def ping(ctx, *, message):
+	"""Ping-pong, baby!
+
+	Parameters
+	----------
+	message
+		A message I'll send back to you
+	"""
+
 	await ctx.send("Pong! " + content or "")
 
 @bot.command()
 async def gamestate(ctx):
+	"""Show the game state"""
+
 	text = utils.gamestate_to_text(game)
 	await ctx.send(text)
 
 @bot.command()
 async def status(ctx):
+	"""Show the current phase
+
+	Including how many players have submitted orders for it
+	"""
+
 	text = f"Current phase is **{game.phase}**. {utils.get_ready_players_count(database)} sent their orders."
 	await ctx.send(text)
 
 @bot.command()
 async def send(ctx, *, orders):
+	"""Send your orders for the phase
+
+	They will replace any previously submitted set of orders. Expected format:
+	A LON H	(hold),
+	F IRI - MAO (move),
+	A WAL S F LON (support a non moving unit),
+	A WAL S F MAO - IRI (support a moving unit),
+	F NWG C A NWY - EDI (convoy),
+	A IRO R MAO (retreat),
+	A IRO D (disband),
+	A LON B (build)
+
+	Parameters
+	----------
+	orders
+		Your orders, exactly one per line. Only sets of valid orders are accepted.
+	"""
+
 	player, power, err = utils.get_player_power(config, ctx)
 	if err:
 		await ctx.send(err)
@@ -119,6 +152,8 @@ async def send(ctx, *, orders):
 
 @bot.command()
 async def check(ctx):
+	"""Check your orders for this phase"""
+
 	player, power, err = utils.get_player_power(config, ctx)
 	if err:
 		await ctx.send(err)
@@ -133,6 +168,8 @@ async def check(ctx):
 
 @bot.command()
 async def remove(ctx):
+	"""Remove your orders for this phase"""
+
 	player = ctx.author.name
 	if not player in database["orders"]:
 		text = f"No orders sent for {player}"
@@ -145,15 +182,42 @@ async def remove(ctx):
 
 @bot.command()
 async def hint(ctx, prov: typing.Optional[str]):
+	"""See all possible valid orders for a province
+
+	Parameters
+	----------
+	prov
+		The abbreviation for the province
+	"""
+
 	await ctx.send(utils.get_hint_for_province(game, prov))
 
 @bot.command()
 async def simulate(ctx, *, orders):
+	"""Simulate a set of orders for the current phase
+
+	Each order on a single line. Orders from a power grouped together and preceded
+	by the power's name.
+
+	Parameters
+	----------
+	orders
+		The orders to simulate
+	"""
+
 	result = utils.simulate(database, orders)
 	await ctx.send(result)
 
 @bot.command()
 async def adjudicate(ctx):
+	"""Adjudicate the current phase
+
+	All currently submitted orders are resolved, their results displayed, along
+	with the next game state. The phase progresses to the next.
+
+	This can only be used on a public channel.
+	"""
+
 	if ctx.channel.type == discord.ChannelType.private:
 		await ctx.send("Cannot adjudicate in a private channel")
 	else:
