@@ -1,9 +1,3 @@
-lit
-luvit
-luvi
-deps/
-gateway.json
 *.log
 data*.json
-config.lua
 config.json
