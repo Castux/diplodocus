@@ -88,6 +88,7 @@ def simulate(database, orders):
 	power = None
 
 	for line in orders.split("\n"):
+		line = line.upper()
 		if line in game.powers.keys():
 			power = line
 		elif power != None and line != "":
@@ -95,7 +96,6 @@ def simulate(database, orders):
 
 	if len(game.error) > 0:
 		return "\n".join(map(str, game.error))
-
 
 	game.process()
 	phase = game.get_phase_history()[-1]
