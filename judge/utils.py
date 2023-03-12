@@ -52,7 +52,7 @@ def orders_to_text(player, power, database):
 	lines = ["Orders for " + player + ":"]
 	lines.append(power)
 	for o in database["orders"][player]:
-		lines.append("\t" + o)
+		lines.append(o)
 
 	return "\n".join(lines)
 
@@ -82,6 +82,25 @@ def sanitize_result(r):
 		r = "OK"
 	return r
 
+def format_order_results(game):
+
+	phase = game.get_phase_history()[-1]
+#
+	lines = ["**" + game.map.phase_long(phase.name) + "**", ""]
+	for power, orders in phase.orders.items():
+		lines.append(power)
+		for order in orders:
+			results = phase.results[order_to_unit(order)]
+			results = map(str, results)
+			results = ", ".join(results)
+			if results != "":
+				results = " (" + results + ")"
+			lines.append(order + results)
+		lines.append("")
+
+	lines += [gamestate_to_text(game)]
+	return "\n".join(lines)
+
 def simulate(database, orders):
 
 	game = from_saved_game_format(database["game"])
@@ -98,20 +117,16 @@ def simulate(database, orders):
 		return "\n".join(map(str, game.error))
 
 	game.process()
-	phase = game.get_phase_history()[-1]
-#
-	lines = ["**Orders**", ""]
-	for power, orders in phase.orders.items():
-		lines.append(power)
-		for order in orders:
-			results = phase.results[order_to_unit(order)]
-			results = map(str, results)
-			results = ", ".join(results)
-			if results != "":
-				results = " (" + results + ")"
-			lines.append("\t" + order + results)
-		lines.append("")
+	return format_order_results(game)
 
-	lines += [gamestate_to_text(game)]
+def adjudicate(database, config, game):
 
-	return "\n".join(lines)
+	for player, orders in database["orders"].items():
+		power = config["players"][player]
+		game.set_orders(power, orders)
+
+	if len(game.error) > 0:
+		return "\n".join(map(str, game.error))
+
+	game.process()
+	return format_order_results(game)

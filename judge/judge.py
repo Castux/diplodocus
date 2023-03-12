@@ -152,4 +152,16 @@ async def simulate(ctx, *, orders):
 	result = utils.simulate(database, orders)
 	await ctx.send(result)
 
+@bot.command()
+async def adjudicate(ctx):
+	if ctx.channel.type == discord.ChannelType.private:
+		await ctx.send("Cannot adjudicate in a private channel")
+	else:
+		result = utils.adjudicate(database, config, game)
+		save_game()
+		save_database()
+		await ctx.send(result)
+
+################################################################################
+
 bot.run(config["token"])
