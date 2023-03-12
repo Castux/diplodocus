@@ -129,4 +129,6 @@ def adjudicate(database, config, game):
 		return "\n".join(map(str, game.error))
 
 	game.process()
+	database["orders"] = {}
+	
 	return format_order_results(game)
