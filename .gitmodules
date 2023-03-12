@@ -1,3 +1,0 @@
-[submodule "judge/diplomacy"]
-	path = diplomacy
-	url = https://github.com/Castux/diplomacy-python.git
