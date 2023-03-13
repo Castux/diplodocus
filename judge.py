@@ -14,6 +14,54 @@ from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 
 import utils
 
+################################################################################
+
+def order_to_unit(order):
+	return " ".join(order.split()[0:2])
+
+def sanitize_result(r):
+	r = str(r)
+	if r == "":
+		r = "OK"
+	return r
+
+def gamestate_to_text(game):
+	lines = []
+	lines.append("**" + game.phase + "**\n")
+
+	for name, power in game.powers.items():
+		lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
+		lines.append("\n".join(power.units))
+		if game.phase_type == 'A':
+			count = len(power.centers) - len(power.units)
+			lines.append("Adjustments: " + str(count))
+			if count > 0:
+				lines.append("Available build sites: " + ", ".join(game._build_sites(power)))
+		lines.append("")
+
+	return '\n'.join(lines)
+
+def format_order_results(game):
+
+	phase = game.get_phase_history()[-1]
+
+	lines = ["**" + game.map.phase_long(phase.name) + "**", ""]
+	for power, orders in phase.orders.items():
+		lines.append(power)
+		for order in orders:
+			results = phase.results[order_to_unit(order)]
+			results = map(str, results)
+			results = ", ".join(results)
+			if results != "":
+				results = " (" + results + ")"
+			lines.append(order + results)
+		lines.append("")
+
+	lines += [gamestate_to_text(game)]
+	return "\n".join(lines)
+
+################################################################################
+
 class Diplodocus():
 
 	def __init__(self):
@@ -51,22 +99,6 @@ class Diplodocus():
 
 		with open(self.config["database"], "w") as f:
 			f.write(json.dumps(self.database))
-
-	def gamestate_to_text(self):
-		lines = []
-		lines.append("**" + self.game.phase + "**\n")
-
-		for name, power in self.game.powers.items():
-			lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
-			lines.append("\n".join(power.units))
-			if self.game.phase_type == 'A':
-				count = len(power.centers) - len(power.units)
-				lines.append("Adjustments: " + str(count))
-				if count > 0:
-					lines.append("Available build sites: " + ", ".join(self.game._build_sites(power)))
-			lines.append("")
-
-		return '\n'.join(lines)
 
 	def get_player_power(self, player):
 		if (not "players" in self.config) or (not player in self.config["players"]):
@@ -123,7 +155,7 @@ class Diplodocus():
 		async def gamestate(ctx):
 			"""Show the game state"""
 
-			text = self.gamestate_to_text()
+			text = gamestate_to_text(self.game)
 			await ctx.send(text)
 
 		@bot.command()
@@ -175,8 +207,6 @@ class Diplodocus():
 			if len(errors) > 0:
 				text = "\n".join(map(str, errors))
 			else:
-				if not "orders" in self.database:
-					self.database["orders"] = {}
 				self.database["orders"][player] = valid
 				self.save_database()
 				text = self.orders_to_text(player, power)
@@ -196,7 +226,7 @@ class Diplodocus():
 			if not player in self.database["orders"]:
 				text = f"No orders sent for {player}"
 			else:
-				text = utils.orders_to_text(player, power, self.database)
+				text = self.orders_to_text(player, power)
 
 			await ctx.send(text)
 
@@ -224,7 +254,20 @@ class Diplodocus():
 				The abbreviation for the province
 			"""
 
-			await ctx.send(utils.get_hint_for_province(self.game, prov))
+			if prov == None:
+				text = "Missing province name"
+			else:
+				hints = self.game.get_all_possible_orders()
+				prov = prov.upper()
+				if prov in hints:
+					if len(hints[prov]) > 0:
+						text = "\n".join(hints[prov])
+					else:
+						text = "No orders possible for " + prov
+				else:
+					text = "Unknown province: " + prov
+
+			await ctx.send(text)
 
 		@bot.command()
 		async def simulate(ctx, *, orders):
@@ -239,8 +282,22 @@ class Diplodocus():
 				The orders to simulate
 			"""
 
-			result = utils.simulate(self.database, orders)
-			await ctx.send(result)
+			game = from_saved_game_format(self.database["game"])
+			power = None
+
+			for line in orders.split("\n"):
+				line = line.upper()
+				if line in game.powers.keys():
+					power = line
+				elif power != None and line != "":
+					game.set_orders(power, line)
+
+			if len(game.error) > 0:
+				return "\n".join(map(str, game.error))
+
+			game.process()
+			text = format_order_results(game)
+			await ctx.send(text)
 
 		@bot.command()
 		async def adjudicate(ctx):
