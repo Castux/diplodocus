@@ -170,7 +170,7 @@ class Diplodocus():
 			elif count == 1:
 				count = "One player has"
 			else:
-				count = (count + " players have")
+				count = f"{count} players have"
 
 			text = f"Current phase is **{self.game.phase}**. {count} sent their orders."
 			await ctx.send(text)
