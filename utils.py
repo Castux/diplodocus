@@ -5,8 +5,13 @@ def gamestate_to_text(game):
 	lines.append("**" + game.phase + "**\n")
 
 	for name, power in game.powers.items():
-		lines.append(name + " (SCs: " + " ".join(power.centers) + ")" )
+		lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
 		lines.append("\n".join(power.units))
+		if game.phase_type == 'A':
+			count = len(power.centers) - len(power.units)
+			lines.append("Adjustments: " + str(count))
+			if count > 0:
+				lines.append("Available build sites: " + ", ".join(game._build_sites(power)))
 		lines.append("")
 
 	return '\n'.join(lines)
@@ -130,5 +135,5 @@ def adjudicate(database, config, game):
 
 	game.process()
 	database["orders"] = {}
-	
+
 	return format_order_results(game)
