@@ -300,6 +300,7 @@ class Diplodocus():
 			await ctx.send(text)
 
 		@bot.command()
+		@commands.guild_only()
 		async def adjudicate(ctx):
 			"""Adjudicate the current phase
 
@@ -308,10 +309,6 @@ class Diplodocus():
 
 			This can only be used on a public channel.
 			"""
-
-			if ctx.channel.type == discord.ChannelType.private:
-				await ctx.send("Cannot adjudicate in a private channel")
-				return
 
 			for player, orders in self.database["orders"].items():
 				power = self.config["players"][player]
