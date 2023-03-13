@@ -29,7 +29,6 @@ check      Check your orders for this phase
 gamestate  Show the game state
 help       Shows this message
 hint       See all possible valid orders for a province
-ping       Ping-pong, baby!
 remove     Remove your orders for this phase
 send       Send your orders for the phase
 simulate   Simulate a set of orders for the current phase
