@@ -52,6 +52,51 @@ class Diplodocus():
 		with open(self.config["database"], "w") as f:
 			f.write(json.dumps(self.database))
 
+	def gamestate_to_text(self):
+		lines = []
+		lines.append("**" + self.game.phase + "**\n")
+
+		for name, power in self.game.powers.items():
+			lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
+			lines.append("\n".join(power.units))
+			if self.game.phase_type == 'A':
+				count = len(power.centers) - len(power.units)
+				lines.append("Adjustments: " + str(count))
+				if count > 0:
+					lines.append("Available build sites: " + ", ".join(self.game._build_sites(power)))
+			lines.append("")
+
+		return '\n'.join(lines)
+
+	def get_player_power(self, player):
+		if (not "players" in self.config) or (not player in self.config["players"]):
+			return None, f"Player {player}'s power missing from config"
+		else:
+			return self.config["players"][player], None
+
+	def check_orders(self, power, orders):
+		game = from_saved_game_format(self.database["game"])
+		orders = orders.split('\n')
+
+		try:
+			game.set_orders(power, orders)
+			errors = game.error
+			valid_orders = game.get_orders(power)
+			return valid_orders, errors
+		except:
+			return [], ["Error while reading orders"]
+
+	def orders_to_text(self, player, power):
+
+		lines = ["Orders for " + player + ":"]
+		lines.append(power)
+		for o in self.database["orders"][player]:
+			lines.append(o)
+
+		return "\n".join(lines)
+
+################################################################################
+
 	def setup_bot(self):
 		intents = discord.Intents.default()
 		intents.message_content = True
@@ -78,7 +123,7 @@ class Diplodocus():
 		async def gamestate(ctx):
 			"""Show the game state"""
 
-			text = utils.gamestate_to_text(self.game)
+			text = self.gamestate_to_text()
 			await ctx.send(text)
 
 		@bot.command()
@@ -88,7 +133,15 @@ class Diplodocus():
 			Including how many players have submitted orders for it
 			"""
 
-			text = f"Current phase is **{self.game.phase}**. {utils.get_ready_players_count(self.database)} sent their orders."
+			count = len(self.database["orders"])
+			if count == 0:
+				count = "No player has"
+			elif count == 1:
+				count = "One player has"
+			else:
+				count = (count + " players have")
+
+			text = f"Current phase is **{self.game.phase}**. {count} sent their orders."
 			await ctx.send(text)
 
 		@bot.command()
@@ -111,19 +164,22 @@ class Diplodocus():
 				Your orders, exactly one per line. Only sets of valid orders are accepted.
 			"""
 
-			player, power, err = utils.get_player_power(self.config, ctx)
+			player = ctx.author.name
+			power, err = self.get_player_power(player)
 			if err:
 				await ctx.send(err)
 				return
 
-			valid, errors = utils.check_orders(self.database, power, orders)
+			valid, errors = self.check_orders(power, orders)
 
 			if len(errors) > 0:
 				text = "\n".join(map(str, errors))
 			else:
-				utils.save_orders(self.config, self.database, player, valid)
+				if not "orders" in self.database:
+					self.database["orders"] = {}
+				self.database["orders"][player] = valid
 				self.save_database()
-				text = utils.orders_to_text(player, power, self.database)
+				text = self.orders_to_text(player, power)
 
 			await ctx.send(text)
 
@@ -131,7 +187,8 @@ class Diplodocus():
 		async def check(ctx):
 			"""Check your orders for this phase"""
 
-			player, power, err = utils.get_player_power(self.config, ctx)
+			player = ctx.author.name
+			power, err = self.get_player_power(player)
 			if err:
 				await ctx.send(err)
 				return

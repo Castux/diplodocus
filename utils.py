@@ -1,57 +1,5 @@
 from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 
-def gamestate_to_text(game):
-	lines = []
-	lines.append("**" + game.phase + "**\n")
-
-	for name, power in game.powers.items():
-		lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
-		lines.append("\n".join(power.units))
-		if game.phase_type == 'A':
-			count = len(power.centers) - len(power.units)
-			lines.append("Adjustments: " + str(count))
-			if count > 0:
-				lines.append("Available build sites: " + ", ".join(game._build_sites(power)))
-		lines.append("")
-
-	return '\n'.join(lines)
-
-
-def get_ready_players_count(database):
-	count = len(database["orders"])
-
-	if count == 0:
-		return "No player has"
-	elif count == 1:
-		return "One player has"
-	else:
-		return (count + " players have")
-
-def get_player_power(config, ctx):
-	player = ctx.author.name
-	if (not "players" in config) or (not player in config["players"]):
-		return None, None, f"Player {player}'s power missing from config"
-
-	return player, config["players"][player], None
-
-def check_orders(database, power, orders):
-	game = from_saved_game_format(database["game"])
-	orders = orders.split('\n')
-
-	try:
-		game.set_orders(power, orders)
-		errors = game.error
-		valid_orders = game.get_orders(power)
-		return valid_orders, errors
-	except:
-		return [], ["Error while reading orders"]
-
-def save_orders(config, database, username, orders):
-	if not "orders" in database:
-		database["orders"] = {}
-
-	database["orders"][username] = orders
-
 def orders_to_text(player, power, database):
 
 	lines = ["Orders for " + player + ":"]
