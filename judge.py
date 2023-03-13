@@ -2,6 +2,7 @@ import random
 import json
 import sys
 import os
+import io
 import discord
 from datetime import datetime
 from discord.ext import commands
@@ -326,6 +327,16 @@ class Diplodocus():
 			self.save_game()
 			self.save_database()
 			await ctx.send(result)
+
+		@bot.command()
+		async def dump(ctx):
+			"""Send a JSON file for the current game state and its history"""
+
+			text = json.dumps(self.database["game"])
+			stream = io.StringIO(text)
+
+			await ctx.send(file=discord.File(stream, filename="game.json"))
+
 
 	def run_bot(self):
 		self.bot.run(self.config["token"])
