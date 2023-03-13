@@ -1,3 +1,5 @@
+![Dino](dinosaur.png)
+
 # Diplodocus
 
 A simple Discord bot to play Diplomacy. It relies on the [diplomacy](https://github.com/diplomacy/diplomacy) Python package, which comes with several variants and supports a [subset](https://github.com/diplomacy/diplomacy/blob/master/diplomacy/README_MAPS.txt) of the [DPJudge format](http://uk.diplom.org/?page=Map) for variant definition.
@@ -39,3 +41,5 @@ status     Show the current phase
 Diplodocus is released under the [MIT license](LICENSE).
 
 This project uses the [diplomacy](https://github.com/diplomacy/diplomacy) (AGPL), and the [discord](https://github.com/Rapptz/discord.py) Python packages (MIT license).
+
+Dinosaur logo by Freepik, [Flaticon license](https://www.flaticon.com/free-icon/dinosaur_8013688).
