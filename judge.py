@@ -12,8 +12,6 @@ sys.path.append('diplomacy')
 import diplomacy
 from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 
-import utils
-
 ################################################################################
 
 def order_to_unit(order):
@@ -311,11 +309,23 @@ class Diplodocus():
 
 			if ctx.channel.type == discord.ChannelType.private:
 				await ctx.send("Cannot adjudicate in a private channel")
-			else:
-				result = utils.adjudicate(self.database, self.config, self.game)
-				self.save_game()
-				self.save_database()
-				await ctx.send(result)
+				return
+
+			for player, orders in self.database["orders"].items():
+				power = self.config["players"][player]
+				self.game.set_orders(power, orders)
+
+			if len(self.game.error) > 0:
+				await ctx.send("\n".join(map(str, game.error)))
+				return
+
+			self.game.process()
+			self.database["orders"] = {}
+			result = format_order_results(self.game)
+
+			self.save_game()
+			self.save_database()
+			await ctx.send(result)
 
 	def run_bot(self):
 		self.bot.run(self.config["token"])
