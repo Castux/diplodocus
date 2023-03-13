@@ -138,6 +138,10 @@ class Diplodocus():
 		async def on_ready():
 			print(f"Connected as {bot.user}")
 
+		@bot.event
+		async def on_command_error(ctx, error):
+			await ctx.send("Error: " + str(error))
+
 		@bot.command()
 		async def ping(ctx, *, message):
 			"""Ping-pong, baby!
@@ -244,27 +248,24 @@ class Diplodocus():
 			await ctx.send(text)
 
 		@bot.command()
-		async def hint(ctx, prov: typing.Optional[str]):
+		async def hint(ctx, province):
 			"""See all possible valid orders for a province
 
 			Parameters
 			----------
-			prov
+			province
 				The abbreviation for the province
 			"""
 
-			if prov == None:
-				text = "Missing province name"
-			else:
-				hints = self.game.get_all_possible_orders()
-				prov = prov.upper()
-				if prov in hints:
-					if len(hints[prov]) > 0:
-						text = "\n".join(hints[prov])
-					else:
-						text = "No orders possible for " + prov
+			hints = self.game.get_all_possible_orders()
+			province = province.upper()
+			if province in hints:
+				if len(hints[province]) > 0:
+					text = "\n".join(hints[province])
 				else:
-					text = "Unknown province: " + prov
+					text = "No orders possible for " + province
+			else:
+				text = "Unknown province: " + province
 
 			await ctx.send(text)
 
