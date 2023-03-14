@@ -18,34 +18,49 @@ from diplomacy.utils.export import to_saved_game_format, from_saved_game_format
 def order_to_unit(order):
 	return " ".join(order.split()[0:2])
 
-def sanitize_result(r):
-	r = str(r)
-	if r == "":
-		r = "OK"
-	return r
-
-def gamestate_to_text(game):
+def format_pending_orders_for_power(power, game):
 	lines = []
-	lines.append("**" + game.phase + "**\n")
+	lines.append(power.name)
+
+	if game.phase_type == 'M':
+		if len(power.units) == 0:
+			return None
+		lines.append("\n".join(power.units))
+
+	elif game.phase_type == 'R':
+		if len(power.retreats) == 0:
+			return None
+		lines.append("\n".join(power.retreats.keys()))
+
+	elif game.phase_type == 'A':
+		lines.append("SCs: " + " ".join(power.centers))
+		lines.append("Units: " + " ".join(power.units))
+		count = len(power.centers) - len(power.units)
+		lines.append("Adjustments: " + str(count))
+		if count > 0:
+			lines.append("Available build sites: " + ", ".join(game._build_sites(power)))
+
+	return "\n".join(lines)
+
+def format_pending_orders(game):
+	lines = []
+	lines.append("**" + game.phase + " - pending**")
 
 	for name, power in game.powers.items():
-		lines.append(name + " (SCs: " + " ".join(power.centers) + ")")
-		lines.append("\n".join(power.units))
-		if game.phase_type == 'A':
-			count = len(power.centers) - len(power.units)
-			lines.append("Adjustments: " + str(count))
-			if count > 0:
-				lines.append("Available build sites: " + ", ".join(game._build_sites(power)))
-		lines.append("")
+		block = format_pending_orders_for_power(power, game)
+		if block != None:
+			lines.append(block)
 
-	return '\n'.join(lines)
+	return "\n\n".join(lines)
 
 def format_order_results(game):
-
 	phase = game.get_phase_history()[-1]
-
 	lines = ["**" + game.map.phase_long(phase.name) + "**", ""]
+
 	for power, orders in phase.orders.items():
+		if len(orders) == 0:
+			continue
+
 		lines.append(power)
 		for order in orders:
 			results = phase.results[order_to_unit(order)]
@@ -56,8 +71,11 @@ def format_order_results(game):
 			lines.append(order + results)
 		lines.append("")
 
-	lines += [gamestate_to_text(game)]
+	lines.append(format_pending_orders(game))
 	return "\n".join(lines)
+
+def gamestate_to_text(game):
+	return "Not implemented yet"
 
 ################################################################################
 
@@ -158,7 +176,9 @@ class Diplodocus():
 		async def gamestate(ctx):
 			"""Show the game state"""
 
-			text = gamestate_to_text(self.game)
+#			text = gamestate_to_text(self.game)
+			text = format_pending_orders(self.game)
+
 			await ctx.send(text)
 
 		@bot.command()
@@ -297,7 +317,7 @@ class Diplodocus():
 			else:
 				game.process()
 				text = format_order_results(game)
-				
+
 			await ctx.send(text)
 
 		@bot.command()
