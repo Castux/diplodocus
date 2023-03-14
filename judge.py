@@ -293,10 +293,11 @@ class Diplodocus():
 					game.set_orders(power, line)
 
 			if len(game.error) > 0:
-				return "\n".join(map(str, game.error))
-
-			game.process()
-			text = format_order_results(game)
+				text = "\n".join(map(str, game.error))
+			else:
+				game.process()
+				text = format_order_results(game)
+				
 			await ctx.send(text)
 
 		@bot.command()
