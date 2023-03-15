@@ -86,8 +86,13 @@ class Diplodocus():
 		with open("config.json", "r") as f:
 			self.config = json.load(f)
 
-		with open(self.config["database"], "r") as f:
-			self.database = json.load(f)
+		try:
+			with open(self.config["database"], "r") as f:
+				self.database = json.load(f)
+		except FileNotFoundError:
+			with open(self.config["database"], "w") as f:
+				f.write("{}")
+				self.database = {}
 
 		if not "orders" in self.database:
 			self.database["orders"] = {}
