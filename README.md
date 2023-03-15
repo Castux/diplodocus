@@ -14,8 +14,10 @@ Requirements:
 Installation:
 
 - Run `./setup.sh`.
-- Rename or copy `config-model-lua` to `config.lua`. Fill in your Discord bot token.
+- Rename or copy `config-model-lua` to `config.lua`. Fill in your Discord bot token, and the mapping between usernames and game powers.
 - Run `./run.sh`
+
+You can set the `variant` field in the config file to any of the [variants](https://github.com/diplomacy/diplomacy/tree/master/diplomacy/maps) included in the library, or a path to a custom `.map` file.
 
 For convenience, an example `systemd` service file is provided, to run the bot as an auto-restart service on a Linux machine. Fill in the correct paths, copy it to `/etc/systemd/system/`, and then start the service with `sudo systemctl start diplodocus`.
 
