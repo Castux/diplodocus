@@ -20,7 +20,7 @@ def order_to_unit(order):
 
 def format_pending_orders_for_power(power, game):
 	lines = []
-	lines.append(power.name)
+	lines.append("__" + power.name + "__")
 
 	if game.phase_type == 'M':
 		if len(power.units) == 0:
@@ -61,7 +61,7 @@ def format_order_results(game):
 		if len(orders) == 0:
 			continue
 
-		lines.append(power)
+		lines.append("__" + power + "__")
 		for order in orders:
 			results = phase.results[order_to_unit(order)]
 			results = map(str, results)
@@ -143,7 +143,7 @@ class Diplodocus():
 	def orders_to_text(self, player, power):
 
 		lines = ["Orders for " + player + ":"]
-		lines.append(power)
+		lines.append("__" + power + "__")
 		for o in self.database["orders"][player]:
 			lines.append(o)
 
