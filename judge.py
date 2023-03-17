@@ -53,8 +53,8 @@ def format_pending_orders(game):
 
 	return "\n\n".join(lines)
 
-def format_order_results(game):
-	phase = game.get_phase_history()[-1]
+def format_order_results(game, phase_index=-1):
+	phase = game.get_phase_history()[phase_index]
 	lines = ["**" + game.map.phase_long(phase.name) + "**", ""]
 
 	for power, orders in phase.orders.items():
@@ -71,7 +71,6 @@ def format_order_results(game):
 			lines.append(order + results)
 		lines.append("")
 
-	lines.append(format_pending_orders(game))
 	return "\n".join(lines)
 
 def gamestate_to_text(game):
@@ -321,7 +320,7 @@ class Diplodocus():
 				text = "\n".join(map(str, game.error))
 			else:
 				game.process()
-				text = format_order_results(game)
+				text = format_order_results(game) + "\n" + format_pending_orders(game)
 
 			await ctx.send(text)
 
@@ -346,11 +345,19 @@ class Diplodocus():
 
 			self.game.process()
 			self.database["orders"] = {}
-			result = format_order_results(self.game)
+			result = format_order_results(self.game) + "\n" + format_pending_orders(self.game)
 
 			self.save_game()
 			self.save_database()
 			await ctx.send(result)
+
+		@bot.command()
+		async def history(ctx):
+			"""Shows all previous moves in the game"""
+
+			text = ""
+			for i in range(len(self.game.get_phase_history())):
+				await ctx.send(format_order_results(self.game, i))
 
 		@bot.command()
 		async def dump(ctx):
