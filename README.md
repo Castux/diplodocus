@@ -19,6 +19,8 @@ Preparation:
 
 Installation:
 
+*(This assumes a Linux system. You might have to adapt the commands to fit yours.)*
+
 - Run `./setup.sh`.
 - Rename or copy `config-model.json` to `config.json`. Fill in your Discord bot token, and the mapping between usernames and game powers.
 - Run `./run.sh`
