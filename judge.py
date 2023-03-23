@@ -148,6 +148,11 @@ class Diplodocus():
 
 		return "\n".join(lines)
 
+	def is_gm(self, name):
+		if not "gm" in self.config:
+			return True
+		return name == self.config["gm"]
+
 ################################################################################
 
 	def setup_bot(self):
@@ -334,6 +339,10 @@ class Diplodocus():
 
 			This can only be used on a public channel.
 			"""
+
+			if not self.is_gm(ctx.author.name):
+				await ctx.send("Command is reserved to the game master")
+				return
 
 			for player, orders in self.database["orders"].items():
 				power = self.config["players"][player]
