@@ -15,7 +15,7 @@ Requirements:
 
 Preparation:
 
-- Create a bot on your Discord developer page, and invite it to you server. For instance by following [these instructions](https://discordpy.readthedocs.io/en/stable/discord.html).
+- Create a bot on your Discord developer page, and invite it to your server. For instance by following [these instructions](https://discordpy.readthedocs.io/en/stable/discord.html).
 
 Installation:
 
