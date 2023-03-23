@@ -170,18 +170,6 @@ class Diplodocus():
 			await ctx.send("Error: " + str(error))
 
 		@bot.command()
-		async def ping(ctx, *, message):
-			"""Ping-pong, baby!
-
-			Parameters
-			----------
-			message
-				A message I'll send back to you
-			"""
-
-			await ctx.send("Pong! " + message or "")
-
-		@bot.command()
 		async def gamestate(ctx):
 			"""Show the game state"""
 
@@ -362,7 +350,7 @@ class Diplodocus():
 
 		@bot.command()
 		async def history(ctx):
-			"""Shows all previous moves in the game"""
+			"""Show all previous moves in the game"""
 
 			text = ""
 			for i in range(len(self.game.get_phase_history())):
