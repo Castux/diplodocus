@@ -33,8 +33,8 @@ def format_pending_orders_for_power(power, game):
 		lines.append("\n".join(power.retreats.keys()))
 
 	elif game.phase_type == 'A':
-		lines.append("SCs: " + " ".join(power.centers))
-		lines.append("Units: " + " ".join(power.units))
+		lines.append("SCs: " + ", ".join(power.centers) + " (" + str(len(power.centers)) + ")")
+		lines.append("Units: " + ", ".join(power.units) + " (" + str(len(power.units)) + ")")
 		count = len(power.centers) - len(power.units)
 		lines.append("Adjustments: " + str(count))
 		if count > 0:
